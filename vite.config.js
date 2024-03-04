@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/nearipedia",
   plugins: [react()],
   resolve: {
     alias: {
