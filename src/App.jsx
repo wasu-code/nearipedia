@@ -1,4 +1,10 @@
-import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import {
+  useEffect,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+  useState,
+} from "react";
 import "./App.css";
 //import './styles/leaflet.css'
 
@@ -25,25 +31,40 @@ import TagSelector from "./components/TagSelector";
 import Map from "./components/map/Map";
 import { X } from "lucide-react";
 import { exportLocalConfig, importLocalConfig } from "./utils/config";
+import AddTag from "./components/AddTag";
 
-const OSM = await loadService("OverpassTurbo");
-const Wikipedia = await loadService("Wikipedia");
-const Services = [OSM, Wikipedia];
+const loadServices = async () => {
+  try {
+    const OSM = await loadService("OverpassTurbo");
+    const Wikipedia = await loadService("Wikipedia");
+    return [OSM, Wikipedia];
+  } catch (error) {
+    console.error("Error loading services:", error);
+    return [];
+  }
+};
 
 function App() {
   const markersRef = useRef();
+  const [services, setServices] = useState([]);
 
   useEffect(() => {
-    importLocalConfig(Services);
+    const initializeServices = async () => {
+      const loadedServices = await loadServices();
+      setServices(loadedServices);
+    };
+    initializeServices();
   }, []);
+
+  useEffect(() => {
+    importLocalConfig(services);
+  }, [services]);
 
   const renderDrawerHeader = () => {
     return (
       <>
         <DrawerHeader className="flex gap-2">
-          <Button variant="secondary" className="material-icons text-2xl">
-            add_box
-          </Button>
+          <AddTag services={services} />
           <Button variant="secondary" className="material-icons text-2xl">
             cloud_upload
           </Button>
@@ -61,7 +82,7 @@ function App() {
 
   return (
     <div className="h-[100vh]">
-      <Map markers={<Markers ref={markersRef} />} />
+      <Map markers={<Markers ref={markersRef} services={services} />} />
 
       <nav className="fixed bottom-0 left-0 z-10 w-full flex gap-2 justify-center p-1">
         <Drawer>
@@ -81,7 +102,7 @@ function App() {
           onOpenChange={(isOpen) => {
             if (!isOpen) {
               markersRef.current.updateMarkers();
-              exportLocalConfig(Services);
+              exportLocalConfig(services);
             }
           }}
         >
@@ -94,7 +115,7 @@ function App() {
             {renderDrawerHeader()}
             <Separator />
             <div className="p-4">
-              {Services.map((service) => (
+              {services.map((service) => (
                 <TagSelector key={service.getMetadata().id} service={service} />
               ))}
             </div>
@@ -120,9 +141,10 @@ const Markers = forwardRef((props, ref) => {
     updateMarkers,
   }));
 
-  useEffect(() => {
-    updateMarkers();
-  }, []);
+  // useEffect(() => {
+  //   if (props.services.length > 0) ref.current.updateMarkers();
+  // //++ must wait for config
+  // }, [props.services]);
 
   map.on("moveend", () => {
     const zoom = map.getZoom();
@@ -131,7 +153,7 @@ const Markers = forwardRef((props, ref) => {
     } else {
       toast.dismiss();
       //fetch and display new markers
-      updateMarkers();
+      ref.current.updateMarkers();
     }
   });
 
@@ -142,7 +164,7 @@ const Markers = forwardRef((props, ref) => {
     } else {
       toast.dismiss();
       //fetch and display new markers
-      updateMarkers();
+      ref.current.updateMarkers();
     }
   });
 
@@ -171,7 +193,7 @@ const Markers = forwardRef((props, ref) => {
     );
     // Array to hold promises for each service
     const promises = [];
-    for (const service of Services) {
+    for (const service of props.services) {
       // Push each service's promise to the promises array
       promises.push(
         service

@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 class APIService {
   constructor() {
     this.tags = [];
@@ -23,6 +25,12 @@ class APIService {
   addTag(tag) {
     if (!this.tags.find((t) => t.value === tag.value)) {
       this.tags.push(tag);
+    } else {
+      toast.warning(
+        `Tag with this value already exists under label: ${
+          this.tags.find((t) => t.value === tag.value).label
+        }`
+      );
     }
     return this.tags;
   }

@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 
 function TagSelector({ service }) {
   // const { metadata, toggleTagActive, getTags } = service;
-  const [tags, setTags] = useState(service.getTags());
-  const metadata = service.getMetadata();
+  const [tags, setTags] = useState(service.tags);
+  const metadata = service.metadata;
 
   useEffect(() => {}, [tags]);
 

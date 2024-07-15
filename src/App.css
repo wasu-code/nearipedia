@@ -8,3 +8,19 @@
 .small-caps {
   font-variant: small-caps;
 }
+
+.tag {
+  transition: transform 2s ease-in-out;
+}
+
+.tag.deleting {
+  transform: scale(0);
+}
+
+.tag.deleting::after {
+  content: "delete_sweep";
+  font-family: Material Icons;
+  font-size: 1em;
+  vertical-align: middle;
+  margin-left: 0.5em;
+}
