@@ -1,0 +1,10 @@
+.leaflet-marker-icon.material-icons {
+  vertical-align: middle;
+  text-align: center;
+  color: #333;
+  text-shadow: -1px 0 #dfdfdf, 0 1px #dfdfdf, 1px 0 #dfdfdf, 0 -1px #dfdfdf;
+}
+
+.small-caps {
+  font-variant: small-caps;
+}
