@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useState,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import "./App.css";
 //import './styles/leaflet.css'
 
@@ -22,15 +16,15 @@ import {
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
-  DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { loadService } from "./utils/serviceFactory";
-import TagSelector from "./components/TagSelectror";
+import TagSelector from "./components/TagSelector";
 import Map from "./components/map/Map";
 import { X } from "lucide-react";
+import { exportLocalConfig, importLocalConfig } from "./utils/config";
 
 const OSM = await loadService("OverpassTurbo");
 const Wikipedia = await loadService("Wikipedia");
@@ -38,6 +32,10 @@ const Services = [OSM, Wikipedia];
 
 function App() {
   const markersRef = useRef();
+
+  useEffect(() => {
+    importLocalConfig(Services);
+  }, []);
 
   const renderDrawerHeader = () => {
     return (
@@ -74,7 +72,7 @@ function App() {
           </DrawerTrigger>
           <DrawerContent>
             {renderDrawerHeader()}
-            <div>dadw</div>
+            <div className="p-4">dadw</div>
             <DrawerFooter></DrawerFooter>
           </DrawerContent>
         </Drawer>
@@ -83,6 +81,7 @@ function App() {
           onOpenChange={(isOpen) => {
             if (!isOpen) {
               markersRef.current.updateMarkers();
+              exportLocalConfig(Services);
             }
           }}
         >
@@ -96,7 +95,7 @@ function App() {
             <Separator />
             <div className="p-4">
               {Services.map((service) => (
-                <TagSelector key={service.metadata.id} service={service} />
+                <TagSelector key={service.getMetadata().id} service={service} />
               ))}
             </div>
             <DrawerFooter></DrawerFooter>
