@@ -1,10 +1,16 @@
-import { useEffect, useState, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import "./App.css";
 //import './styles/leaflet.css'
 
 // eslint-disable-next-line no-unused-vars
 import * as L from "leaflet";
-import { MapContainer, TileLayer, useMap, Marker, Popup } from "react-leaflet";
+import { useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css"; // sass
 import "react-leaflet-markercluster/dist/styles.min.css";
 
@@ -23,12 +29,16 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { loadService } from "./utils/serviceFactory";
 import TagSelector from "./components/TagSelectror";
+import Map from "./components/map/Map";
+import { X } from "lucide-react";
 
 const OSM = await loadService("OverpassTurbo");
 const Wikipedia = await loadService("Wikipedia");
 const Services = [OSM, Wikipedia];
 
 function App() {
+  const markersRef = useRef();
+
   const renderDrawerHeader = () => {
     return (
       <>
@@ -42,6 +52,9 @@ function App() {
           <Button variant="secondary" className="material-icons text-2xl">
             cloud_download
           </Button>
+          <DrawerClose className="ml-auto px-1">
+            <X />
+          </DrawerClose>
         </DrawerHeader>
         <Separator />
       </>
@@ -50,27 +63,7 @@ function App() {
 
   return (
     <div className="h-[100vh]">
-      <MapContainer
-        center={[51.505, -0.09]}
-        zoom={13}
-        scrollWheelZoom={true}
-        className="h-full z-0"
-        zoomControl={true}
-      >
-        <CustomMapSettings />
-
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        <Markers />
-        <Marker position={[51.505, -0.09]}>
-          <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
-          </Popup>
-        </Marker>
-      </MapContainer>
+      <Map markers={<Markers ref={markersRef} />} />
 
       <nav className="fixed bottom-0 left-0 z-10 w-full flex gap-2 justify-center p-1">
         <Drawer>
@@ -86,7 +79,13 @@ function App() {
           </DrawerContent>
         </Drawer>
 
-        <Drawer>
+        <Drawer
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              markersRef.current.updateMarkers();
+            }
+          }}
+        >
           <DrawerTrigger asChild>
             <Button className="material-icons text-xl aspect-square">
               tune
@@ -95,7 +94,7 @@ function App() {
           <DrawerContent>
             {renderDrawerHeader()}
             <Separator />
-            <div className="p-2">
+            <div className="p-4">
               {Services.map((service) => (
                 <TagSelector key={service.metadata.id} service={service} />
               ))}
@@ -115,48 +114,12 @@ function App() {
   );
 }
 
-function CustomMapSettings() {
+const Markers = forwardRef((props, ref) => {
   const map = useMap();
 
-  map.attributionControl.setPosition("topright");
-
-  /*map.zoomControl.remove();
-  const customZoomControl = L.control.zoom({ position: 'topright' });
-  customZoomControl.addTo(map);*/
-  //reposition zoom controls
-  const middleHeight = map.getSize().y / 2;
-  const zoomControlContainer = document.querySelector(".leaflet-control-zoom");
-  zoomControlContainer.style.position = "fixed";
-  zoomControlContainer.style.right = "10px";
-  zoomControlContainer.style.top = `${middleHeight}px`;
-
-  document.getElementById("locationBtn").addEventListener("click", () => {
-    // Button 3 functionality
-    centerOnUserLocation();
-  });
-
-  function centerOnUserLocation() {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          map.setView([lat, lon]);
-        },
-        (error) => {
-          console.error("Error getting user location:", error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not available in this browser.");
-    }
-  }
-
-  return null;
-}
-
-function Markers() {
-  const map = useMap();
+  useImperativeHandle(ref, () => ({
+    updateMarkers,
+  }));
 
   useEffect(() => {
     updateMarkers();
@@ -192,6 +155,14 @@ function Markers() {
     });
   }
 
+  function removeLayersByPrefix(prefix) {
+    map.eachLayer((layer) => {
+      if (layer.customLayerName && layer.customLayerName.startsWith(prefix)) {
+        map.removeLayer(layer);
+      }
+    });
+  }
+
   const updateMarkers = () => {
     const t = toast.loading("Updating markers");
     const bbox = map.getBounds(); // Get the current bounding box
@@ -207,8 +178,9 @@ function Markers() {
         service
           .getLayers({ bbox: bbox, center: center, radius: radius })
           .then((layers) => {
+            removeLayersByPrefix(service.getMetadata().name);
             for (const layer of layers) {
-              removeLayerByName(layer.customLayerName); //remove old layer
+              //removeLayerByName(layer.customLayerName); //remove old layer
               map.addLayer(layer);
             }
           })
@@ -227,6 +199,9 @@ function Markers() {
         toast.dismiss(t); // Dismiss the toast in case of error as well
       });
   };
-}
+
+  return null;
+});
+Markers.displayName = "Markers";
 
 export default App;
