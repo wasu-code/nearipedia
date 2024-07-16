@@ -30,7 +30,11 @@ import { loadService } from "./utils/serviceFactory";
 import TagSelector from "./components/TagSelector";
 import Map from "./components/map/Map";
 import { X } from "lucide-react";
-import { exportLocalConfig, importLocalConfig } from "./utils/config";
+import {
+  exportCSVConfig,
+  exportLocalConfig,
+  importLocalConfig,
+} from "./utils/config";
 import AddTag from "./components/AddTag";
 
 const loadServices = async () => {
@@ -70,6 +74,13 @@ function App() {
           </Button>
           <Button variant="secondary" className="material-icons text-2xl">
             cloud_download
+          </Button>
+          <Button
+            variant="secondary"
+            className="text-2xl"
+            onClick={() => exportCSVConfig(services)}
+          >
+            csv
           </Button>
           <DrawerClose className="ml-auto px-1">
             <X />

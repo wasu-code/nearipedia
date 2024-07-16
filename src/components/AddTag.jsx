@@ -103,7 +103,9 @@ function AddTag({ services }) {
               id="icon"
               placeholder="Emote or Material Icon"
               value={tag.icon}
-              onChange={(e) => setTag((p) => ({ ...p, icon: e.target.value }))}
+              onChange={(e) =>
+                setTag((p) => ({ ...p, icon: e.target.value.toLowerCase() }))
+              }
               className="max-w-full truncate"
             />
           </div>
