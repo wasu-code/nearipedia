@@ -33,7 +33,9 @@ import { X } from "lucide-react";
 import {
   exportCSVConfig,
   exportLocalConfig,
+  exportRemoteConfig,
   importLocalConfig,
+  importRemoteConfig,
 } from "./utils/config";
 import AddTag from "./components/AddTag";
 
@@ -69,10 +71,18 @@ function App() {
       <>
         <DrawerHeader className="flex gap-2">
           <AddTag services={services} />
-          <Button variant="secondary" className="material-icons text-2xl">
+          <Button
+            variant="secondary"
+            className="material-icons text-2xl"
+            onClick={() => exportRemoteConfig(services)}
+          >
             cloud_upload
           </Button>
-          <Button variant="secondary" className="material-icons text-2xl">
+          <Button
+            variant="secondary"
+            className="material-icons text-2xl"
+            onClick={() => importRemoteConfig(services)}
+          >
             cloud_download
           </Button>
           <Button
@@ -86,6 +96,7 @@ function App() {
             <X />
           </DrawerClose>
         </DrawerHeader>
+        <div id="remotestorage-widget-anchor"></div>
         <Separator />
       </>
     );
@@ -98,7 +109,7 @@ function App() {
       <nav className="fixed bottom-0 left-0 z-10 w-full flex gap-2 justify-center p-1">
         <Drawer>
           <DrawerTrigger asChild>
-            <Button className="material-icons text-xl aspect-square">
+            <Button className="material-icons text-3xl p-6 aspect-square">
               info
             </Button>
           </DrawerTrigger>
@@ -118,7 +129,7 @@ function App() {
           }}
         >
           <DrawerTrigger asChild>
-            <Button className="material-icons text-xl aspect-square">
+            <Button className="material-icons text-3xl p-6 aspect-square">
               tune
             </Button>
           </DrawerTrigger>
@@ -135,7 +146,7 @@ function App() {
         </Drawer>
 
         <Button
-          className="material-icons text-xl aspect-square"
+          className="material-icons text-3xl p-6 aspect-square"
           id="locationBtn"
         >
           my_location
@@ -168,16 +179,17 @@ const Markers = forwardRef((props, ref) => {
     }
   });
 
-  map.on("zoomend", function () {
-    const zoom = map.getZoom();
-    if (zoom < 11) {
-      toast("Zoom in to display new markers");
-    } else {
-      toast.dismiss();
-      //fetch and display new markers
-      ref.current.updateMarkers();
-    }
-  });
+  // map.on("zoomend", function () {
+  //   const zoom = map.getZoom();
+  //   if (zoom < 11) {
+  //     toast("Zoom in to display new markers");
+  //   } else {
+  //     toast.dismiss();
+  //     //fetch and display new markers
+  //     console.log("zoom ended");
+  //     ref.current.updateMarkers();
+  //   }
+  // });
 
   function removeLayerByName(name) {
     map.eachLayer((layer) => {
@@ -223,12 +235,13 @@ const Markers = forwardRef((props, ref) => {
     Promise.all(promises)
       .then(() => {
         // Dismiss the toast once all promises have resolved
-        toast.dismiss(t);
       })
       .catch((error) => {
         // Handle errors if any of the promises reject
         console.error("Error updating markers:", error);
-        toast.dismiss(t); // Dismiss the toast in case of error as well
+      })
+      .finally(() => {
+        toast.dismiss(t);
       });
   };
 

@@ -58,7 +58,7 @@ class Wikipedia extends APIService {
             const marker = L.marker([point.lat, point.lon], {
               icon: customIcon(tag.icon),
             }).bindPopup(
-              `<a href="https://${tag.value}.wikipedia.org/?curid=${point.pageid}" target="_blank"> ${point.title}</a>`
+              `<a href="https://${tag.value}.m.wikipedia.org/?curid=${point.pageid}" target="_blank"> ${point.title}</a>`
             );
             markersClusterGroup.addLayer(marker);
           }

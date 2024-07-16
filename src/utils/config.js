@@ -1,4 +1,20 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import RemoteStorage from "remotestoragejs";
+import Widget from "remotestorage-widget";
+import { toast } from "sonner";
+// import "remotestorage-widget/styles.css"; // Optional: include CSS for the widget
+
 const storageKey = "nearipedia-config";
+let remoteStorage;
+let client;
 
 export function exportLocalConfig(services) {
   const obj = prepareForExport(services);
@@ -15,12 +31,74 @@ export function importLocalConfig(services) {
   }
 }
 
-export function importRemoteConfig() {
-  throw new Error("NOT IMPLEMENTED");
+export function initRemoteStorage() {
+  toast.info("Login to proceed");
+  // Construct and dependency inject
+  const remoteStorageInstance = new RemoteStorage({
+    changeEvents: { local: true, window: true, remote: true, conflicts: true },
+  });
+  remoteStorageInstance.access.claim("nearipedia", "rw");
+  const clientInstance = remoteStorageInstance.scope("/nearipedia/");
+
+  remoteStorage = remoteStorageInstance;
+  client = clientInstance;
+
+  // Initialize widget
+  const widget = new Widget(remoteStorageInstance, { leaveOpen: false });
+  widget.attach("remotestorage-widget-anchor");
+  clientInstance.cache("");
+
+  // Register application state JSON schema
+  clientInstance.declareType("services", {
+    type: "object",
+    properties: {
+      list: {
+        type: "object",
+      },
+    },
+    required: ["list"],
+  });
+
+  // React to application state changes from RS
+  // clientInstance.on("change", (event) => {
+  //   if (event.relativePath === "services") {
+  //     setServices(event.newValue);
+  //     console.log(event.newValue);
+  //   }
+  // });
+  toast.success("You are ready to upload/import your config", {
+    description: "Click respective buttons to continue",
+  });
 }
 
-export function exportRemoteConfig() {
-  throw new Error("NOT IMPLEMENTED");
+export function importRemoteConfig(services) {
+  console.log(client);
+  if (client) {
+    client.getObject("services").then((storedServices) => {
+      if (storedServices && storedServices.list) {
+        for (const service of services) {
+          const serviceId = service.metadata.id;
+          if (storedServices.list[serviceId]) {
+            service.setTags(storedServices.list[serviceId]);
+          }
+        }
+      }
+    });
+    toast.success("Config imported");
+  } else {
+    initRemoteStorage();
+  }
+}
+
+export function exportRemoteConfig(services) {
+  if (client) {
+    let obj = prepareForExport(services);
+    client.storeObject("services", "services", { list: obj });
+    console.log(obj);
+    toast.success("Config exported");
+  } else {
+    initRemoteStorage();
+  }
 }
 
 export function exportCSVConfig(services) {
@@ -40,6 +118,8 @@ export function exportCSVConfig(services) {
 export function importCSVConfig() {
   throw new Error("NOT IMPLEMENTED");
 }
+
+//                                   //
 
 function prepareForExport(services) {
   let obj = {};

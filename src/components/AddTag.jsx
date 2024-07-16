@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import {
@@ -18,7 +19,6 @@ import {
 import { useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { DialogClose } from "@radix-ui/react-dialog";
 import { toast } from "sonner";
 
 function AddTag({ services }) {

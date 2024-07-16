@@ -5,16 +5,18 @@ import "./theme.css";
 import { Toaster } from "@/components/ui/sonner";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <App />
-    <Toaster
-      position={"top-center"}
-      closeButton
-      visibleToasts={1}
-      toastOptions={{
-        duration: 9999999,
-      }}
-      theme="light"
-    />
-  </React.StrictMode>
+  <>
+    <React.StrictMode>
+      <App />
+      <Toaster
+        position={"top-center"}
+        closeButton
+        visibleToasts={1}
+        toastOptions={{
+          duration: 2000,
+        }}
+        theme="light"
+      />
+    </React.StrictMode>
+  </>
 );
