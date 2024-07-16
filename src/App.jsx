@@ -133,10 +133,10 @@ function App() {
               tune
             </Button>
           </DrawerTrigger>
-          <DrawerContent>
+          <DrawerContent className="max-h-full">
             {renderDrawerHeader()}
             <Separator />
-            <div className="p-4">
+            <div className="p-4  h-min overflow-y-scroll scrollbar">
               {services.map((service) => (
                 <TagSelector key={service.getMetadata().id} service={service} />
               ))}
