@@ -22,7 +22,7 @@ function TagSelector({ service }) {
         </div>
         <ChevronsUpDown size={32} className="self-right" />
       </CollapsibleTrigger>
-      <CollapsibleContent className="flex gap-2 pt-2">
+      <CollapsibleContent className="flex flex-wrap gap-2 pt-2">
         {tags.map((tag) => (
           <button
             key={tag.value}

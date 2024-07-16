@@ -96,7 +96,7 @@ function AddTag({ services }) {
 
           <Label htmlFor="icon">Icon</Label>
           <div className="relative flex col-span-2">
-            <div className="material-icons absolute right-1 self-center">
+            <div className="material-icons absolute right-1 self-center max-w-20 truncate">
               {tag.icon}
             </div>
             <Input
@@ -104,6 +104,7 @@ function AddTag({ services }) {
               placeholder="Emote or Material Icon"
               value={tag.icon}
               onChange={(e) => setTag((p) => ({ ...p, icon: e.target.value }))}
+              className="max-w-full truncate"
             />
           </div>
         </div>
